@@ -1,5 +1,8 @@
 $fn = 64; // Set the arc
 
+/// TODO: When printing, flip it.
+
+
 cube_w = 40;
 cube_h = 4;
 
