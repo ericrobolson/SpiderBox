@@ -64,29 +64,40 @@ module hitbox_buttons() {
     //
     // Movement buttons
     //
+    
+    module move_buttons() {
+        move1_horz = -row1_spacing;
+        move1_vert = 10;
+        btn(move1_horz, move1_vert, 0, small_btn_diameter);
 
-    move1_horz = -row1_spacing;
-    move1_vert = 10;
-    btn(move1_horz, move1_vert, 0, small_btn_diameter);
+        // move 2
+        move2_horz_offset = -row2_horz_offset;
+        move2_vert_offset = row2_vert_offset;
 
-    // move 2
-    move2_horz_offset = -row2_horz_offset;
-    move2_vert_offset = row2_vert_offset;
+        move2_horz = move1_horz + move2_horz_offset;
+        move2_vert = move1_vert + move2_vert_offset;
 
-    move2_horz = move1_horz + move2_horz_offset;
-    move2_vert = move1_vert + move2_vert_offset;
-
-    btn(move2_horz, move2_vert, 0, small_btn_diameter);
+        btn(move2_horz, move2_vert, 0, small_btn_diameter);
 
 
-    // move 3
-    move3_horz_offset = -row3_horz_offset;
-    move3_vert_offset = move2_vert_offset;
+        // move 3
+        move3_horz_offset = -row3_horz_offset;
+        move3_vert_offset = move2_vert_offset;
 
-    move3_horz = move2_horz + move3_horz_offset;
-    move3_vert = move1_vert + move3_vert_offset;
+        move3_horz = move2_horz + move3_horz_offset;
+        move3_vert = move1_vert + move3_vert_offset;
 
-    btn(move3_horz, move3_vert, 0, small_btn_diameter);
+        btn(move3_horz, move3_vert, 0, small_btn_diameter);
+    }
+    
+    move_buttons();
+    
+    // Start, select, home
+    translate([0,row1_vert +5,0]){
+        move_buttons();
+    }
+
+    
 
     // Large btn
 
@@ -108,52 +119,54 @@ module screw(trans, rot, length = screw_len, color = [1,1,0]) {
 }
 
 
-module plate() {
-    fp_inner_width = 240;
-    fp_inner_height = 160;
-    fp_inner_depth = 20;
-    
-    fp_wall_thickness = 7;
-    fp_width = fp_inner_width + fp_wall_thickness;
-    fp_height = fp_inner_height + fp_wall_thickness;
-    fp_depth = 16;
-    fp_thickness = 6;
-    
-    
-    module plate_screws(){
+
+fp_inner_width = 240;
+fp_inner_height = 165;
+fp_inner_depth = 6;
+
+fp_wall_thickness = 7;
+fp_width = fp_inner_width + fp_wall_thickness;
+fp_height = fp_inner_height + fp_wall_thickness;
+fp_depth = 16;
+fp_thickness = 6;
+
+ module plate_screws(){
          // Screw definitions
         screw_height_offset = 0 + fp_depth / 2 + screw_diameter /2;
-        horz_screw_rot = [0,90,0];
-        vert_screw_rot = [90,0,0];
+        horz_screw_rot = [0,0,0];
+        vert_screw_rot = [0,0,0];
         
         // Horz screws
-        screw([0,-fp_width/4,screw_height_offset],horz_screw_rot);
-        screw([0,0,screw_height_offset],horz_screw_rot);
-        screw([0,fp_width/4,screw_height_offset],horz_screw_rot);
+        offset = 10;
         
-        
-        // Vert screws
-        screw([100,0,screw_height_offset],vert_screw_rot);
-        screw([0,0,screw_height_offset],vert_screw_rot);
-        screw([-100,0,screw_height_offset],vert_screw_rot);
-
-    };
-    
-    // Final shape
-    difference(){
-        // Plates
-        difference() {
-            translate([0,0, fp_depth / 2])
-            cube([fp_width,fp_height,fp_depth],center = true);
-
-            // this is the diff cube
-            translate([0,0, fp_inner_depth / 2 + fp_thickness]) 
-            cube([fp_inner_width,fp_inner_height,fp_inner_depth],center = true);
+        module screw_row() {
+            screw([fp_inner_width / 2 - offset,fp_inner_height / 2 - offset,0] , [0,0,0]);
+            screw([0 / 2,fp_inner_height / 2 - offset,0] , [0,0,0]);
+            screw([-fp_inner_width / 2 + offset,fp_inner_height / 2 - offset,0] , [0,0,0]);
         }
         
-        // Screws 
-        plate_screws();
+        
+        screw_row();
+        mirror([0,-1,0]) {
+            screw_row();
+        }
+
+
+        
+    };
+
+module plate() { 
+    // Final shape
+    difference(){
+        // this is the diff cube
+        translate([0,0, fp_inner_depth / 2 + fp_thickness]) 
+        cube([fp_inner_width,fp_inner_height,fp_inner_depth],center = true);
+       
+       // Screws
+       plate_screws(); 
     }
+    
+
 };
 
 
@@ -163,28 +176,14 @@ module plate() {
 
 // Button faceplate
 difference() {
-    translate([0,0,0])
+    translate([0,10,0])
     color([0,1,0])
     plate();
 
     btn_vert_offset = 10;
 
+    mirror([1,0,0])
     translate([15,btn_vert_offset,-5])
     mirror([1,0,0])
     hitbox_buttons();
 }
-
-// Bottom plate
-translate([0,0,100])
-mirror([0,0,1])
-color([0,1,0])
-plate();
-
-
-/*
-/// Reference
-ref_scale = 0.6;
-translate([0,0,-100])
-scale([ref_scale, ref_scale, ref_scale])
-surface(file = "hitbox_layout_small.png", center = true);
-*/
