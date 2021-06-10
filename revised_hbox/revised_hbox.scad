@@ -1,17 +1,18 @@
 $fn = 64; // Set the arc
 
-small_btn_diameter = 25; // mm
-large_btn_diameter = 31 ; // mm
 
-btn_height = 32; // mm
+module hitbox_buttons() {        
+    small_btn_diameter = 25; // mm
+    large_btn_diameter = 31 ; // mm
 
-module btn(x,y,z, dia, color = [1,0,0]) {
-    translate([x,y,z])
-    color(color)
-    cylinder(h = btn_height, d = dia);
-}
+    btn_height = 32; // mm
 
-module hitbox_buttons() {
+    module btn(x,y,z, dia, color = [1,0,0]) {
+        translate([x,y,z])
+        color(color)
+        cylinder(h = btn_height, d = dia);
+    }
+    
     vertical_spacing = 30; // vertical spacing between small buttons
     horz_spacing = 2;
     row1_spacing = 14;
@@ -107,10 +108,10 @@ module hitbox_buttons() {
 
 
 
-screw_diameter = 5;
-screw_len = 500;
 
 module screw(trans, rot, length = screw_len, color = [1,1,0]) {
+    screw_diameter = 5;
+    screw_len = 500;
     translate(trans)
     rotate(rot)
     color(color)
@@ -119,97 +120,58 @@ module screw(trans, rot, length = screw_len, color = [1,1,0]) {
 
 
 
-fp_inner_width = 240;
-fp_inner_height = 165;
-fp_inner_depth = 2; // This is the thickness NOTE: this felt large. Was previously 4.
-
-fp_wall_thickness = 7;
-fp_width = fp_inner_width + fp_wall_thickness;
-fp_height = fp_inner_height + fp_wall_thickness;
-fp_depth = 16;
-fp_thickness = 6;
-
- module plate_screws(){
-         // Screw definitions
-        screw_height_offset = 0 + fp_depth / 2 + screw_diameter /2;
-        horz_screw_rot = [0,0,0];
-        vert_screw_rot = [0,0,0];
-        
-        // Horz screws
-        offset = 10;
-        
-        module screw_row() {
-            screw([fp_inner_width / 2 - offset,fp_inner_height / 2 - offset,0] , [0,0,0]);
-            screw([0 / 2,fp_inner_height / 2 - offset,0] , [0,0,0]);
-            screw([-fp_inner_width / 2 + offset,fp_inner_height / 2 - offset,0] , [0,0,0]);
-        }
-        
-        
-        screw_row();
-        mirror([0,-1,0]) {
-            screw_row();
-        }
 
 
-        
-    };
 
-module plate(use_screws=true) { 
-    // Final shape
-    difference(){
-        // this is the diff cube
-        translate([0,0, fp_inner_depth / 2 + fp_thickness]) 
-        cube([fp_inner_width,fp_inner_height,fp_inner_depth],center = true);
-       
-        // Screws
-        if (use_screws) {                
-           plate_screws(); 
-        }
+
+N = "north";
+S = "south";
+E = "east";
+W = "west";
+
+
+module plate() {
+    
+    height = 170;
+    width = 270;
+    depth = 10;
+    
+    edge_length = 20;
+    edge_depth = 5;
+    
+    module base() {
+        function bot_left() = [[0,0]];
+        function bot_right() = [[width, 0]];
+        function top_right() = [[width, height]];
+        function top_left() = [[0, height]];
+        
+        points = concat(bot_left(), bot_right(), top_right(), top_left());
+        
+        echo(points);
+            
+        //cube([width, height, depth], true);
+        polygon(points);
     }
-};
+              
+    function edge1() = [[0,0]];
+    function edge2() = [[width, 0]];
+    function edge3() = [[width, height]];
+    function edge4() = [[0, height]];
 
-module wall(){
-    // TODO: make this able to handle bolts + nuts
-    // TODO: optimize shape + height?
-
-    // this is the diff cube
-    scale([1,1,10])
-    translate([0,10,0])
+    edges = concat(edge1(), edge2(), edge3());
+    
+    translate([-width/2, -height/2])
     difference(){
-        plate();
-        translate([0,0, fp_inner_depth / 2 + fp_thickness]) 
-        cube([220,130,20], true);
+        base();
+       
+        
+        polygon(edges);
     }
 }
-
 
 ////////////////////////////////////////////////
 // RENDER
 ////////////////////////////////////////////////
 
-if (true == true) {
-    wall();
-}
-
-// Button faceplate
-if (false == true) {
-    difference() {
-        translate([0,10,0])
-        color([0,1,0])
-        plate();
-
-        btn_vert_offset = 10;
-
-        mirror([1,0,0])
-        translate([15,btn_vert_offset,-5])
-        mirror([1,0,0])
-        hitbox_buttons();
-    }
-}
-
-// bottom plate
-if (false == true){
-    translate([0,10,0])
-    color([0,1,0])
-    plate();
-}
+hitbox_buttons();
+plate();
